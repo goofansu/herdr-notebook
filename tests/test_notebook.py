@@ -179,6 +179,18 @@ class NotebookTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("HERDR_PLUGIN_STATE_DIR is not set", result.stderr)
 
+    def test_notifies_instead_of_crashing_when_the_directory_cannot_be_made(
+        self,
+    ) -> None:
+        blocked = os.path.join(self.state, "notebooks")
+        with open(blocked, "w", encoding="utf-8") as handle:
+            handle.write("in the way\n")
+        result = self.invoke("open-notebook")
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("could not prepare the notebook directory", result.stderr)
+        self.assertEqual(self.calls()[-1][3], "Notebook")
+
     def test_the_manifest_hands_the_file_to_the_editor_and_keeps_no_hooks(self) -> None:
         with open(MANIFEST, encoding="utf-8") as handle:
             manifest = handle.read()

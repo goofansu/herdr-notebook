@@ -133,7 +133,15 @@ def open_notebook() -> int:
     """
     cwd = workspace_cwd()
     path = notebook_path(cwd)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+    except OSError as error:
+        # The only filesystem call in the plugin, and the only one that can
+        # fail on a full or read-only state volume. It has to arrive as a
+        # PluginError or the reader gets no overlay and no notification.
+        raise PluginError(
+            f"could not prepare the notebook directory: {error}"
+        ) from error
     return open_overlay(path, cwd)
 
 
