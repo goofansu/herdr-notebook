@@ -2,13 +2,13 @@ id = "herdr-notebook"
 name = "Notebook"
 version = "0.1.0"
 min_herdr_version = "0.8.0"
-description = "Keep one Markdown notebook per workspace, opened over the active pane"
+description = "Open a plain Markdown notebook for this workspace over the active pane"
 platforms = ["linux", "macos"]
 
 [[actions]]
 id = "open-notebook"
 title = "Open this workspace's notebook"
-description = "Show this workspace's notebook over the active pane and take one timestamped memo before closing"
+description = "Open this workspace's Markdown notebook in $EDITOR over the active pane"
 contexts = ["workspace"]
 command = ["python3", "herdr_notebook.py", "open-notebook"]
 
@@ -16,4 +16,4 @@ command = ["python3", "herdr_notebook.py", "open-notebook"]
 id = "notebook"
 title = "Notebook"
 placement = "overlay"
-command = ["sh", "-c", "exec python3 \"$HERDR_PLUGIN_ROOT/herdr_notebook.py\" run-open-notebook"]
+command = ["sh", "-c", 'exec ${VISUAL:-${EDITOR:-vi}} "$HERDR_NOTEBOOK_PATH"']

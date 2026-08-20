@@ -1,8 +1,8 @@
 # herdr-notebook
 
-One Markdown notebook per Herdr workspace, opened over the active pane. Write a
-line about what you are doing, press Enter, and it is timestamped into the
-notebook and the overlay closes.
+One plain Markdown notebook per Herdr workspace, opened in `$EDITOR` over the
+active pane. The plugin decides only where the file lives; everything inside it
+is yours to write.
 
 Notebooks are permanent. Closing the workspace does not remove one, and
 reopening the same directory as a workspace brings the same notebook back.
@@ -25,28 +25,13 @@ command = "herdr-notebook.open-notebook"
 description = "open this workspace's notebook"
 ```
 
-Pressing it opens the notebook over the active pane:
+Pressing it opens this workspace's notebook in `$EDITOR`, or `$VISUAL` when that
+is set, falling back to `vi`. Write whatever you want, then save and quit the way
+you normally would; the overlay closes with the editor.
 
-```text
-# herdr-notebook
-
-Notebook for the Herdr workspace in `/Users/james/code/herdr-notebook`.
-Started 2026-08-20 11:43.
-
-## 2026-08-20
-
-- 11:12 reading the plugin docs
-- 11:43 waiting on CI
-
-Memo (empty closes):
-```
-
-Type a line and press Enter to save it. Press Enter on an empty line to close
-without writing anything.
-
-The overlay is an ordinary Herdr pane, not a modal popup, so prefix keybindings
-and pane navigation keep working while it is up. Herdr restores the previous
-focus and zoom when it closes.
+The overlay is a temporary zoomed Herdr pane, not a modal popup, so prefix
+keybindings and pane navigation keep working while the editor is up. Herdr
+restores the previous focus and zoom when it closes.
 
 ## Storage
 
@@ -61,13 +46,16 @@ The notebook is keyed to the directory rather than to the workspace id, because
 Herdr hands out a fresh workspace id every time a workspace is opened. Keying on
 the directory is what lets a notebook outlive its workspace.
 
-Nothing in this plugin deletes a notebook. Edit or remove the files yourself when
-you want to.
+The plugin creates the directory and nothing else. The file is the editor's to
+create, so quitting without saving leaves nothing behind, and no line in a
+notebook was written by anything but you. Nothing here deletes a notebook
+either; edit or remove the files yourself when you want to.
 
 ## Requirements
 
 - Herdr 0.8.0 or newer, on Linux or macOS
 - Python 3.9 or newer
+- An editor on `PATH`, via `$VISUAL`, `$EDITOR`, or `vi`
 
 ## Development
 
