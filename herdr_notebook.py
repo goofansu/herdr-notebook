@@ -64,7 +64,10 @@ def workspace_cwd() -> str:
         raise PluginError(f"could not read the plugin context: {error}") from error
     if not isinstance(context, dict):
         raise PluginError("the plugin context is not an object")
-    cwd = text(context.get("workspace_cwd")) or text(context.get("focused_pane_cwd"))
+    # Only the workspace's own directory will do. Falling back to the focused
+    # pane's would quietly file the notes under wherever that shell happened to
+    # be, and a notebook in the wrong place looks exactly like a lost one.
+    cwd = text(context.get("workspace_cwd"))
     if not cwd:
         raise PluginError("there is no workspace to keep a notebook for")
     return canonical_directory(cwd)

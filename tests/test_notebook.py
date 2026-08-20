@@ -184,13 +184,14 @@ class NotebookTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.calls()[0][self.calls()[0].index("--cwd") + 1], gone)
 
-    def test_falls_back_to_the_focused_pane_directory(self) -> None:
+    def test_refuses_a_context_that_names_only_a_pane(self) -> None:
         result = self.invoke(
             "open-notebook",
             HERDR_PLUGIN_CONTEXT_JSON=json.dumps({"focused_pane_cwd": CWD}),
         )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(self.calls(), [self.pane_open(self.notebook())])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("no workspace to keep a notebook for", result.stderr)
+        self.assertEqual(self.calls()[-1][3], "Notebook")
 
     def test_notifies_instead_of_opening_without_a_workspace_directory(self) -> None:
         result = self.invoke("open-notebook", HERDR_PLUGIN_CONTEXT_JSON="{}")
