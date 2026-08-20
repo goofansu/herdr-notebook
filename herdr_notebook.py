@@ -67,7 +67,37 @@ def workspace_cwd() -> str:
     cwd = text(context.get("workspace_cwd")) or text(context.get("focused_pane_cwd"))
     if not cwd:
         raise PluginError("there is no workspace to keep a notebook for")
-    return os.path.normpath(cwd)
+    return canonical_directory(cwd)
+
+
+def stored_spelling(parent: str, name: str) -> str:
+    """Return a name as its parent directory stores it, case included."""
+    try:
+        entries = os.listdir(parent)
+    except OSError:
+        return name
+    if name in entries:
+        return name
+    # Only a case-insensitive filesystem can reach here, and only one entry can
+    # match once case is ignored. A case-sensitive one already matched exactly.
+    folded = [entry for entry in entries if entry.lower() == name.lower()]
+    return folded[0] if len(folded) == 1 else name
+
+
+def canonical_directory(cwd: str) -> str:
+    """Reduce a directory to the one spelling its notebook is filed under.
+
+    Symlinks and letter case both let a single directory wear more than one
+    name, and every spare name would open its own empty notebook. realpath
+    settles the symlinks, and walking the components settles the case by
+    preferring what the parent directory stores over what was asked for.
+    Anything that cannot be listed keeps the spelling it arrived with.
+    """
+    resolved = os.path.realpath(os.path.normpath(cwd))
+    canonical = os.sep
+    for part in resolved.strip(os.sep).split(os.sep):
+        canonical = os.path.join(canonical, stored_spelling(canonical, part))
+    return canonical
 
 
 def state_dir() -> str:
@@ -83,7 +113,8 @@ def notebook_path(cwd: str) -> str:
     A workspace id is handed out fresh every time a workspace is opened, so
     keying on it would strand the notebook the moment the workspace closed.
     The directory is what a workspace comes back as, and the digest keeps two
-    checkouts that share a basename apart.
+    checkouts that share a basename apart. The caller resolves the directory
+    to one canonical spelling first, so the digest is stable.
     """
     slug = UNSLUGGABLE.sub("-", os.path.basename(cwd).lower()).strip("-")
     digest = hashlib.sha256(cwd.encode("utf-8")).hexdigest()[:DIGEST_LENGTH]

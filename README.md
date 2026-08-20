@@ -46,6 +46,20 @@ The notebook is keyed to the directory rather than to the workspace id, because
 Herdr hands out a fresh workspace id every time a workspace is opened. Keying on
 the directory is what lets a notebook outlive its workspace.
 
+The directory is reduced to one canonical spelling before it is hashed, so a
+single directory can only ever have one notebook. Symbolic links are resolved,
+and on a case-insensitive filesystem the spelling the parent directory actually
+stores wins over the one that was asked for:
+
+```text
+/Users/james/code/project    ->  project-1d6b58b0ef02.md
+/Users/james/Code/project    ->  project-1d6b58b0ef02.md   same notebook
+~/link-to-project            ->  project-1d6b58b0ef02.md   same notebook
+```
+
+Renaming or moving the directory is the one thing that does start a fresh
+notebook. The old file stays where it is; rename it yourself to reconnect it.
+
 The plugin creates the directory and nothing else. The file is the editor's to
 create, so quitting without saving leaves nothing behind, and no line in a
 notebook was written by anything but you. Nothing here deletes a notebook

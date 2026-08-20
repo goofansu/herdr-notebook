@@ -35,6 +35,8 @@ class NotebookTest(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.tmp)
+        # The plugin resolves symlinks, and on macOS /var is one.
+        self.root = os.path.realpath(self.tmp)
         self.bin = os.path.join(self.tmp, "bin")
         self.state = os.path.join(self.tmp, "state")
         os.makedirs(self.bin)
@@ -141,6 +143,46 @@ class NotebookTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.calls()[0], self.calls()[1])
+
+    def test_reaches_one_notebook_through_a_symlinked_directory(self) -> None:
+        real = os.path.join(self.root, "real")
+        link = os.path.join(self.root, "link")
+        os.mkdir(real)
+        os.symlink(real, link)
+        for cwd in (real, link):
+            with self.subTest(cwd=cwd):
+                result = self.invoke(
+                    "open-notebook",
+                    HERDR_PLUGIN_CONTEXT_JSON=json.dumps({"workspace_cwd": cwd}),
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.calls()[0], self.calls()[1])
+
+    def test_reaches_one_notebook_through_a_differently_cased_directory(self) -> None:
+        real = os.path.join(self.root, "Real")
+        os.mkdir(real)
+        if not os.path.exists(os.path.join(self.root, "real")):
+            self.skipTest("filesystem is case-sensitive")
+        for cwd in (real, os.path.join(self.root, "real")):
+            with self.subTest(cwd=cwd):
+                result = self.invoke(
+                    "open-notebook",
+                    HERDR_PLUGIN_CONTEXT_JSON=json.dumps({"workspace_cwd": cwd}),
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.calls()[0], self.calls()[1])
+        # The stored spelling wins, not the one that was asked for.
+        self.assertIn("--cwd", self.calls()[0])
+        self.assertEqual(self.calls()[0][self.calls()[0].index("--cwd") + 1], real)
+
+    def test_keeps_the_spelling_of_a_directory_that_is_not_there(self) -> None:
+        gone = os.path.join(self.root, "Never", "Existed")
+        result = self.invoke(
+            "open-notebook",
+            HERDR_PLUGIN_CONTEXT_JSON=json.dumps({"workspace_cwd": gone}),
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.calls()[0][self.calls()[0].index("--cwd") + 1], gone)
 
     def test_falls_back_to_the_focused_pane_directory(self) -> None:
         result = self.invoke(
