@@ -1,77 +1,19 @@
 id = "herdr-notebook"
-name = "Pane Notebook"
+name = "Notebook"
 version = "0.1.0"
 min_herdr_version = "0.8.0"
-description = "Keep a memo notebook beside a pane for as long as that pane lives"
+description = "Keep one Markdown notebook per workspace, opened over the active pane"
 platforms = ["linux", "macos"]
 
 [[actions]]
-id = "add-memo"
-title = "Add a memo to this pane"
-description = "Ask for one line in a popup, timestamp it into this pane's notebook, and show it on the pane"
-contexts = ["pane"]
-command = ["python3", "herdr_notebook.py", "add-memo"]
-
-[[actions]]
 id = "open-notebook"
-title = "Edit this pane's notebook"
-description = "Open this pane's notebook in $EDITOR, then show its newest memo on the pane"
-contexts = ["pane"]
+title = "Open this workspace's notebook"
+description = "Show this workspace's notebook over the active pane and take one timestamped memo before closing"
+contexts = ["workspace"]
 command = ["python3", "herdr_notebook.py", "open-notebook"]
 
-[[actions]]
-id = "show-notebook"
-title = "Show this pane's notebook"
-description = "Read this pane's notebook in a popup pager without editing it"
-contexts = ["pane"]
-command = ["python3", "herdr_notebook.py", "show-notebook"]
-
-[[actions]]
-id = "clear-notebook"
-title = "Clear this pane's notebook"
-description = "Archive this pane's notebook after confirmation and start the pane over with an empty one"
-contexts = ["pane"]
-command = ["python3", "herdr_notebook.py", "clear-notebook"]
-
-[[events]]
-on = "pane.closed"
-command = ["python3", "herdr_notebook.py", "on-pane-closed"]
-
-[[events]]
-on = "pane.moved"
-command = ["python3", "herdr_notebook.py", "on-pane-moved"]
-
-[[startup]]
-command = ["python3", "herdr_notebook.py", "restore"]
-
 [[panes]]
-id = "memo-prompt"
-title = "Add memo"
-placement = "popup"
-width = "70%"
-height = 9
-command = ["sh", "-c", "exec python3 \"$HERDR_PLUGIN_ROOT/herdr_notebook.py\" run-add-memo"]
-
-[[panes]]
-id = "notebook-editor"
-title = "Pane notebook"
-placement = "popup"
-width = "80%"
-height = "80%"
+id = "notebook"
+title = "Notebook"
+placement = "overlay"
 command = ["sh", "-c", "exec python3 \"$HERDR_PLUGIN_ROOT/herdr_notebook.py\" run-open-notebook"]
-
-[[panes]]
-id = "notebook-viewer"
-title = "Pane notebook"
-placement = "popup"
-width = "80%"
-height = "80%"
-command = ["sh", "-c", "exec python3 \"$HERDR_PLUGIN_ROOT/herdr_notebook.py\" run-show-notebook"]
-
-[[panes]]
-id = "clear-confirm"
-title = "Clear notebook"
-placement = "popup"
-width = "70%"
-height = 9
-command = ["sh", "-c", "exec python3 \"$HERDR_PLUGIN_ROOT/herdr_notebook.py\" run-clear-notebook"]

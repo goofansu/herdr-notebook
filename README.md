@@ -1,8 +1,11 @@
 # herdr-notebook
 
-Keeps a Markdown notebook beside a Herdr pane for as long as that pane lives, so
-you can jot down what the pane is doing and read it back later. The newest memo
-is shown on the pane itself; the notebook is archived when the pane closes.
+One Markdown notebook per Herdr workspace, opened over the active pane. Write a
+line about what you are doing, press Enter, and it is timestamped into the
+notebook and the overlay closes.
+
+Notebooks are permanent. Closing the workspace does not remove one, and
+reopening the same directory as a workspace brings the same notebook back.
 
 ## Install
 
@@ -10,79 +13,61 @@ is shown on the pane itself; the notebook is archived when the pane closes.
 herdr plugin install goofansu/herdr-notebook
 ```
 
-## Actions
+## Use
 
-| Action | What it does |
-| --- | --- |
-| `add-memo` | Asks for one line in a popup and timestamps it into this pane's notebook |
-| `open-notebook` | Opens this pane's notebook in `$EDITOR` for longer notes |
-| `show-notebook` | Reads the notebook in a popup pager without editing it |
-| `clear-notebook` | Archives this pane's notebook after confirmation and starts over |
-
-Bind the ones you use:
+One action, `open-notebook`. Bind it:
 
 ```toml
 [[keys.command]]
-key = "prefix+ctrl+n"
-type = "plugin_action"
-command = "herdr-notebook.add-memo"
-description = "add a memo to this pane"
-
-[[keys.command]]
-key = "prefix+alt+n"
+key = "prefix+n"
 type = "plugin_action"
 command = "herdr-notebook.open-notebook"
-description = "edit this pane's notebook"
-
-[[keys.command]]
-key = "prefix+alt+m"
-type = "plugin_action"
-command = "herdr-notebook.show-notebook"
-description = "show this pane's notebook"
+description = "open this workspace's notebook"
 ```
 
-## Seeing the memo
+Pressing it opens the notebook over the active pane:
 
-Every saved memo is reported as display-only pane metadata: as the pane's title,
-and as a `$notebook` sidebar token. Add the token to an Agent row to keep the
-memo next to the pane it belongs to:
+```text
+# herdr-notebook
 
-```toml
-[ui.sidebar.agents]
-rows = [
-  ["state_icon", "workspace", "tab"],
-  ["agent"],
-  ["$notebook"],
-]
+Notebook for the Herdr workspace in `/Users/james/code/herdr-notebook`.
+Started 2026-08-20 11:43.
+
+## 2026-08-20
+
+- 11:12 reading the plugin docs
+- 11:43 waiting on CI
+
+Memo (empty closes):
 ```
 
-Rows with no value disappear, so panes without a notebook look unchanged.
+Type a line and press Enter to save it. Press Enter on an empty line to close
+without writing anything.
 
-## Lifecycle
+The overlay is an ordinary Herdr pane, not a modal popup, so prefix keybindings
+and pane navigation keep working while it is up. Herdr restores the previous
+focus and zoom when it closes.
 
-A notebook belongs to one pane and follows that pane's life:
+## Storage
 
-- It is created the first time you add or edit a memo for the pane.
-- It follows the pane when the pane moves to another tab or workspace, which
-  gives the pane a new id.
-- It is re-attached to its pane after a Herdr restart, which restores panes but
-  not their metadata.
-- It is archived when the pane closes, when its pane does not come back after a
-  restart, or when you clear it.
-
-Notebooks are one Markdown file per pane under the plugin's state directory,
-with the 50 most recently archived notebooks kept beside them:
+One Markdown file per workspace directory, named after the directory's basename
+plus a digest of its full path:
 
 ```shell
-ls ~/.local/state/herdr/plugins/herdr-notebook/panes
-ls ~/.local/state/herdr/plugins/herdr-notebook/archive
+ls ~/.local/state/herdr/plugins/herdr-notebook/notebooks
 ```
+
+The notebook is keyed to the directory rather than to the workspace id, because
+Herdr hands out a fresh workspace id every time a workspace is opened. Keying on
+the directory is what lets a notebook outlive its workspace.
+
+Nothing in this plugin deletes a notebook. Edit or remove the files yourself when
+you want to.
 
 ## Requirements
 
 - Herdr 0.8.0 or newer, on Linux or macOS
 - Python 3.9 or newer
-- An `$EDITOR` for `open-notebook`, and a `$PAGER` or `less` for `show-notebook`
 
 ## Development
 
