@@ -52,9 +52,9 @@ and on a case-insensitive filesystem the spelling the parent directory actually
 stores wins over the one that was asked for:
 
 ```text
-/Users/james/code/project    ->  project-1d6b58b0ef02.md
-/Users/james/Code/project    ->  project-1d6b58b0ef02.md   same notebook
-~/link-to-project            ->  project-1d6b58b0ef02.md   same notebook
+~/code/project       ->  project-<digest>.md
+~/Code/project       ->  project-<digest>.md   the same notebook
+~/link-to-project    ->  project-<digest>.md   the same notebook
 ```
 
 Renaming or moving the directory is the one thing that does start a fresh
