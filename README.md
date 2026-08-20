@@ -1,11 +1,11 @@
 # herdr-notebook
 
-One plain Markdown notebook per Herdr workspace, opened in your editor over the
-active pane. The plugin decides only where the file lives; everything inside it
-is yours to write.
+One permanent Markdown notebook per Herdr workspace, opened in your editor over
+the active pane. The plugin decides only where the file lives; everything inside
+it is yours to write.
 
-Notebooks are permanent. Closing a workspace does not remove one, and reopening
-the same directory as a workspace brings the same notebook back.
+Closing a workspace does not remove a notebook, and reopening the same directory
+as a workspace brings the same one back.
 
 ## Install
 
